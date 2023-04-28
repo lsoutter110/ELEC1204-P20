@@ -3,6 +3,7 @@
 
 // STD INCLUDES
 #include <vector>
+#include <queue>
 using namespace std;
 
 // QT INCLUDES
@@ -24,10 +25,10 @@ public:
     ~MainWindow();
 
     void paintEvent(QPaintEvent *event);
-    void drawToCanvas(vector<CanvasObject> canvas_objects);
 
 protected:
     vector<CanvasObject*> canvas_objects;
+    void clear_canvas();
 
 private:
     Ui::MainWindow *ui;

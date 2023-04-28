@@ -6,12 +6,21 @@
 SendWindow::SendWindow(QWidget *parent) : MainWindow(parent) {
     setWindowTitle("Interactive Whiteboard - Send");
 
+    receive_window = new ReceiveWindow(this, &send_queue);
+    receive_window->show();
+
     QProxyStyle style;
 
     toolbar = addToolBar("main toolbar");
     QAction *action_clear_canvas = toolbar->addAction(style.standardIcon(QStyle::SP_FileIcon), "Clear Canvas");
 
-    connect(action_clear_canvas, &QAction::triggered, this, &SendWindow::clear_canvas);
+    connect(action_clear_canvas, &QAction::triggered, this, &SendWindow::slot_clear_canvas);
+
+    connect(this, SIGNAL(items_in_queue()), receive_window, SLOT(empty_queue()));
+}
+
+SendWindow::~SendWindow() {
+    delete receive_window;
 }
 
 void SendWindow::mousePressEvent(QMouseEvent *event) {
@@ -69,8 +78,12 @@ void SendWindow::on_mouse_move(int mouse_x, int mouse_y) {
         if(!drawing) break;
 
         Line* l = new Line(last_mouse_x, last_mouse_y, mouse_x, mouse_y);
-        // SERIALISE AND SEND TO IO THREAD
         canvas_objects.push_back(l);
+
+        send_queue.push(l->serialise());
+        //TEMPORARY FOR 3.1
+        emit items_in_queue();
+        //=================
 
         last_mouse_x = mouse_x;
         last_mouse_y = mouse_y;
@@ -79,11 +92,15 @@ void SendWindow::on_mouse_move(int mouse_x, int mouse_y) {
     }
 }
 
-void SendWindow::clear_canvas() {
-    for(CanvasObject *c : canvas_objects) {
-        delete c;
-    }
-    canvas_objects.clear();
-    // CLEAR CANVAS PACKET
-    update();
+void SendWindow::slot_clear_canvas() {
+    clear_canvas();
+
+    send_queue.push(serialise_clear_screen());
+    //TEMPORARY FOR 3.1
+    emit items_in_queue();
+    //=================
+}
+
+void SendWindow::test_recv() {
+    qDebug() << "test_recv";
 }

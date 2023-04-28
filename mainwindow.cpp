@@ -28,3 +28,12 @@ void MainWindow::paintEvent(QPaintEvent *event) {
         c->draw(&painter);
     }
 }
+
+void MainWindow::clear_canvas() {
+    for(CanvasObject *c : canvas_objects) {
+        delete c;
+    }
+    canvas_objects.clear();
+
+    update();
+}

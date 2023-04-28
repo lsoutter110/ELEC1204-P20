@@ -1,7 +1,7 @@
 #ifndef SENDWINDOW_H
 #define SENDWINDOW_H
 
-#include "mainwindow.h"
+#include "receivewindow.h"
 #include <QMouseEvent>
 #include <QObject>
 #include <QToolBar>
@@ -14,8 +14,11 @@ enum DrawingMode {
 
 class SendWindow : public MainWindow
 {
+    Q_OBJECT
+
 public:
     SendWindow(QWidget *parent = nullptr);
+    ~SendWindow();
 
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
@@ -31,10 +34,19 @@ private:
     int last_mouse_y;
     DrawingMode drawing_mode = DMStroke;
 
+    ReceiveWindow *receive_window;
     QToolBar *toolbar;
 
+    queue<uint8_t*> send_queue;
+
 private slots:
-    void clear_canvas();
+    void slot_clear_canvas();
+
+    //TEMPORARY FOR 3.1
+    void test_recv();
+signals:
+    void items_in_queue();
+    //=================
 };
 
 #endif // SENDWINDOW_H
