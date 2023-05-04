@@ -1,20 +1,14 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
 #include "canvasobject.h"
 
 #include <QPainter>
 #include <QPen>
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
-{
-    ui->setupUi(this);
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+    resize(800, 600);
 }
 
-MainWindow::~MainWindow()
-{
-    delete ui;
+MainWindow::~MainWindow() {
     for(CanvasObject* c : canvas_objects) {
         delete c;
     }
@@ -22,10 +16,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
-    painter.setPen(QPen(Qt::black, 4, Qt::SolidLine, Qt::RoundCap));
+    QPen pen;
 
     for(auto c : canvas_objects) {
-        c->draw(&painter);
+        c->draw(&painter, &pen);
     }
 }
 

@@ -4,6 +4,8 @@
 // STD INCLUDES
 #include <vector>
 #include <queue>
+#include <mutex>
+
 using namespace std;
 
 // QT INCLUDES
@@ -11,10 +13,6 @@ using namespace std;
 
 // USER INCLUDES
 #include "canvasobject.h"
-
-namespace Ui {
-class MainWindow;
-}
 
 class MainWindow : public QMainWindow
 {
@@ -29,9 +27,6 @@ public:
 protected:
     vector<CanvasObject*> canvas_objects;
     void clear_canvas();
-
-private:
-    Ui::MainWindow *ui;
 };
 
 #endif // MAINWINDOW_H
