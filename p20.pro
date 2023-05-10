@@ -35,9 +35,13 @@ HEADERS += \
         mainwindow.h \
     sendwindow.h \
     receivewindow.h \
-    canvasobject.h
+    canvasobject.h \
+    util.h \
+    gpio_controller.h
 
 FORMS +=
+
+LIBS += -lwiringPi
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

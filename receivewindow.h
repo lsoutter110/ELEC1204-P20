@@ -11,13 +11,13 @@ class ReceiveWindow : public MainWindow
 
 public:
     ReceiveWindow(QWidget *parent = nullptr,
-                  queue<uint8_t*> *data_queue = nullptr,
+                  queue<byte*> *data_queue = nullptr,
                   mutex *data_mutex = nullptr);
 
     void timerEvent(QTimerEvent *event);
 
 protected:
-    queue<uint8_t*> *receive_queue;
+    queue<byte*> *receive_queue;
     mutex *receive_mutex;
 };
 

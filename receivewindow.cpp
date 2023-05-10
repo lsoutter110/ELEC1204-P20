@@ -2,7 +2,7 @@
 
 #include <QDebug>
 
-ReceiveWindow::ReceiveWindow(QWidget *parent, queue<uint8_t*> *data_queue, mutex *data_mutex)
+ReceiveWindow::ReceiveWindow(QWidget *parent, queue<byte*> *data_queue, mutex *data_mutex)
     : MainWindow(parent), receive_queue(data_queue), receive_mutex(data_mutex) {
     setWindowTitle("Interactive Whiteboard - Receive");
 

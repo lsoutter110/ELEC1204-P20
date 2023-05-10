@@ -1,5 +1,6 @@
 #include "sendwindow.h"
 #include "receivewindow.h"
+#include "gpio_controller.h"
 #include <QApplication>
 
 #include <thread>
@@ -11,15 +12,13 @@ struct Args {
 };
 
 Args parse_args(int argc, char *argv[]);
-void gpio_controller_loopback(queue<uint8_t*> *send_queue, queue<uint8_t*> *receive_queue, mutex *send_mutex, mutex *receive_mutex);
-void gpio_controller(queue<uint8_t*> *send_queue, queue<uint8_t*> *receive_queue, mutex *send_mutex, mutex *receive_mutex);
 
 int main(int argc, char *argv[])
 {
     Args args = parse_args(argc, argv);
     QApplication a(argc, argv);
 
-    queue<uint8_t*> send_queue, receive_queue;
+    queue<byte*> send_queue, receive_queue;
     mutex send_mutex, receive_mutex;
 
     SendWindow s(nullptr, &send_queue, &send_mutex);
@@ -32,31 +31,6 @@ int main(int argc, char *argv[])
     r.show();
 
     return a.exec();
-}
-
-void gpio_controller_loopback(queue<uint8_t*> *send_queue, queue<uint8_t*> *receive_queue, mutex *send_mutex, mutex *receive_mutex) {
-    while(1) {
-        if(send_queue->empty()) continue;
-
-        //wait for lock on send
-        send_mutex->lock();
-        //get front packet
-        uint8_t *packet = send_queue->front();
-        send_queue->pop();
-        //unlock send
-        send_mutex->unlock();
-
-        //wait for lock on receive
-        receive_mutex->lock();
-        //push to queue
-        receive_queue->push(packet);
-        //unclock receive
-        receive_mutex->unlock();
-    }
-}
-
-void gpio_controller(queue<uint8_t*> *send_queue, queue<uint8_t*> *receive_queue, mutex *send_mutex, mutex *receive_mutex) {
-
 }
 
 Args parse_args(int argc, char *argv[]) {

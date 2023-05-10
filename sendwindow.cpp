@@ -3,7 +3,7 @@
 #include <QStyle>
 #include <QProxyStyle>
 
-SendWindow::SendWindow(QWidget *parent, queue<uint8_t*> *data_queue, mutex *data_mutex)
+SendWindow::SendWindow(QWidget *parent, queue<byte*> *data_queue, mutex *data_mutex)
     : MainWindow(parent), send_queue(data_queue), send_mutex(data_mutex) {
     setWindowTitle("Interactive Whiteboard - Send");
 

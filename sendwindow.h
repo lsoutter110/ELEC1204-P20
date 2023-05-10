@@ -27,27 +27,27 @@ class SendWindow : public MainWindow
 
 public:
     SendWindow(QWidget *parent = nullptr,
-               queue<uint8_t*> *data_queue = nullptr,
+               queue<byte*> *data_queue = nullptr,
                mutex *data_mutex = nullptr);
     ~SendWindow();
 
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
-    void on_mouse_down(int16_t mouse_x, int16_t mouse_y);
-    void on_mouse_up(int16_t mouse_x, int16_t mouse_y);
-    void on_mouse_move(int16_t mouse_x, int16_t mouse_y);
+    void on_mouse_down(i16 mouse_x, i16 mouse_y);
+    void on_mouse_up(i16 mouse_x, i16 mouse_y);
+    void on_mouse_move(i16 mouse_x, i16 mouse_y);
 
 private:
     bool drawing = false;
-    int16_t last_mouse_x, last_mouse_y;
+    i16 last_mouse_x, last_mouse_y;
     DrawingMode drawing_mode = DMNone;
     QPen drawing_pen = QPen(Qt::black, 4, Qt::SolidLine, Qt::RoundCap);
 
     QToolBar *toolbar;
     QColorDialog *col_dialog;
 
-    queue<uint8_t*> *send_queue;
+    queue<byte*> *send_queue;
     mutex *send_mutex;
 
 private slots:
