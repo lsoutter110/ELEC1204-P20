@@ -15,13 +15,15 @@ SendWindow::SendWindow(QWidget *parent, queue<byte*> *data_queue, mutex *data_mu
     QAction *action_clear_canvas = toolbar->addAction(style.standardIcon(QStyle::SP_FileIcon), "Clear Canvas");
     QAction *action_colour_picker = toolbar->addAction(QIcon("icons/colour_picker.png"), "Pick Colour");
     toolbar->addSeparator();
-    QAction *action_set_tool_none = toolbar->addAction(style.standardIcon(QStyle::SP_FileIcon), "No Tool");
-    QAction *action_set_tool_stroke = toolbar->addAction(style.standardIcon(QStyle::SP_FileIcon), "Pen Tool");
-    QAction *action_set_tool_eraser = toolbar->addAction(style.standardIcon(QStyle::SP_FileIcon), "Eraser");
+    QAction *action_set_tool_none = toolbar->addAction(QIcon("icons/mouse_icon.png"), "No Tool");
+    QAction *action_set_tool_stroke = toolbar->addAction(QIcon("icons/pen_icon.png"), "Pen Tool");
+    QAction *action_set_tool_eraser = toolbar->addAction(QIcon("icons/eraser_icon.png"), "Eraser");
     toolbar->addSeparator();
     QAction *action_set_tool_line = toolbar->addAction(QIcon("icons/line.png"), "Line");
     QAction *action_set_tool_rect = toolbar->addAction(QIcon("icons/rect.png"), "Rectangle");
     QAction *action_set_tool_circle = toolbar->addAction(QIcon("icons/circle.png"), "Circle");
+    toolbar->addSeparator();
+    QAction *action_set_tool_image = toolbar->addAction(QIcon("icons/image_icon.png"), "Image");
 
     connect(action_clear_canvas, &QAction::triggered, this, &SendWindow::slot_clear_canvas);
     connect(action_colour_picker, &QAction::triggered, this, &SendWindow::colour_picker);
@@ -74,6 +76,22 @@ void SendWindow::on_mouse_down(int16_t mouse_x, int16_t mouse_y) {
         break;
 
     case DMEraser:
+        for(auto c=canvas_objects.begin(); c<canvas_objects.end(); ++c) {
+            //check for collision
+            if(!(*c)->collide(mouse_x, mouse_y, eraser_width))
+                continue;
+            //delete object
+            delete (*c);
+            canvas_objects.erase(c);
+            //send to queue
+            send_mutex->lock();
+            send_queue->push(serialise_erase((u16)(c-canvas_objects.begin())));
+            send_mutex->unlock();
+            //step backward to nullify ++c
+            --c;
+        }
+        //refresh screen
+        update();
         break;
 
     case DMLine:
@@ -149,6 +167,22 @@ void SendWindow::on_mouse_move(int16_t mouse_x, int16_t mouse_y) {
         break;
 
     case DMEraser:
+        for(auto c=canvas_objects.begin(); c<canvas_objects.end(); ++c) {
+            //check for collision
+            if(!(*c)->collide(mouse_x, mouse_y, eraser_width))
+                continue;
+            //delete object
+            delete (*c);
+            canvas_objects.erase(c);
+            //send to queue
+            send_mutex->lock();
+            send_queue->push(serialise_erase((u16)(c-canvas_objects.begin())));
+            send_mutex->unlock();
+            //step backward to nullify ++c
+            --c;
+        }
+        //refresh screen
+        update();
         break;
 
     case DMLine:

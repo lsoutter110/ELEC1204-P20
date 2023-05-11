@@ -8,6 +8,7 @@ CanvasObject::CanvasObject() { /* Empty method */ }
 
 void CanvasObject::draw(QPainter *painter, QPen *pen) { /* Empty method */ }
 byte *CanvasObject::serialise() { /* Empty method */ }
+bool CanvasObject::collide(i16 xi, i16 yi, u8 width) { /*Empty method */ }
 
 // Line
 
@@ -48,6 +49,10 @@ byte *Line::serialise() {
         0,                          //checksum default value
     };
     return (byte*)packet;
+}
+
+bool Line::collide(i16 xi, i16 yi, u8 width) {
+    return false;
 }
 
 // Rect
@@ -94,6 +99,11 @@ byte *Rect::serialise() {
     return (byte*)packet;
 }
 
+bool Rect::collide(i16 xi, i16 yi, u8 width) {
+    return ((abs(x1-xi)<width || abs(x2-xi)<width) && (((y1<yi+width)&&(yi<y2+width)) || ((y2<yi+width)&&(yi<y1+width))))
+        || ((abs(y1-yi)<width || abs(y2-yi)<width) && (((x1<xi+width)&&(xi<x2+width)) || ((x2<xi+width)&&(xi<x1+width))));
+}
+
 // Circle
 
 Circle::Circle(i16 xi, i16 yi, i16 radi, QPen pen) : x(xi), y(yi), rad(radi) {
@@ -134,6 +144,10 @@ byte *Circle::serialise() {
     return (byte*)packet;
 }
 
+bool Circle::collide(i16 xi, i16 yi, u8 width) {
+    return abs(distance(xi, yi, x, y)-rad)<width;
+}
+
 // Commands
 
 byte *serialise_clear_screen() {
@@ -144,9 +158,11 @@ byte *serialise_clear_screen() {
     return (byte*)packet;
 }
 
-void core1send(byte *packet) {
-    //gen_checksum(&packet); //fill checksum field
-    //send packet
-    //confirm sent
-    delete packet;
+byte *serialise_erase(u16 index) {
+    PacketErase *packet = new (PacketErase){
+        PTErase,  //type
+        index,    //vector index
+        0,        //checksum default value
+    };
+    return (byte*)packet;
 }

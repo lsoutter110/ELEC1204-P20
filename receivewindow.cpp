@@ -34,6 +34,10 @@ void ReceiveWindow::timerEvent(QTimerEvent *event) {
             break;
         case PTImage:
             break;
+        case PTErase:
+            delete canvas_objects[((PacketErase*)packet)->index];
+            canvas_objects.erase(canvas_objects.begin() + ((PacketErase*)packet)->index);
+            break;
         }
 
         delete packet;

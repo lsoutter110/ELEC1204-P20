@@ -9,7 +9,6 @@
 #include <QColorDialog>
 #include <QPen>
 
-#include <cmath>
 using namespace std;
 
 enum DrawingMode {
@@ -43,6 +42,7 @@ private:
     i16 last_mouse_x, last_mouse_y;
     DrawingMode drawing_mode = DMNone;
     QPen drawing_pen = QPen(Qt::black, 4, Qt::SolidLine, Qt::RoundCap);
+    u8 eraser_width = 10;
 
     QToolBar *toolbar;
     QColorDialog *col_dialog;
@@ -61,12 +61,5 @@ private slots:
     void set_tool_rect();
     void set_tool_circle();
 };
-
-template<class T>
-T distance(T x1, T y1, T x2, T y2) {
-    T dx = x1-x2;
-    T dy = y1-y2;
-    return (T)sqrt(dx*dx + dy*dy);
-}
 
 #endif // SENDWINDOW_H

@@ -19,6 +19,7 @@ enum PacketType : u8 {
     PTRect,
     PTCircle,
     PTImage,
+    PTErase,
 };
 
 struct PacketClearScreen {
@@ -51,7 +52,13 @@ struct PacketCircle {
     u16 checksum;
 };
 
-const size_t PACKET_SIZE_INDEX[] = {sizeof(PacketClearScreen), sizeof(PacketLine), sizeof(PacketRect), sizeof(PacketCircle)};
+struct PacketErase {
+    PacketType type;
+    u16 index;
+    u16 checksum;
+};
+
+const size_t PACKET_SIZE_INDEX[] = {sizeof(PacketClearScreen), sizeof(PacketLine), sizeof(PacketRect), sizeof(PacketCircle), sizeof(PacketErase)};
 
 class CanvasObject
 {
@@ -62,6 +69,7 @@ public:
 
     virtual void draw(QPainter *painter, QPen *pen);
     virtual byte *serialise();
+    virtual bool collide(i16 xi, i16 yi, u8 width);
 };
 
 class Line : public CanvasObject {
@@ -76,6 +84,7 @@ public:
 
     void draw(QPainter *painter, QPen *pen) override;
     byte *serialise() override;
+    bool collide(i16 xi, i16 yi, u8 width) override;
 };
 
 class Rect : public CanvasObject {
@@ -90,6 +99,7 @@ public:
 
     void draw(QPainter *painter, QPen *pen) override;
     byte *serialise() override;
+    bool collide(i16 xi, i16 yi, u8 width) override;
 };
 
 class Circle : public CanvasObject {
@@ -104,8 +114,10 @@ public:
 
     void draw(QPainter *painter, QPen *pen) override;
     byte *serialise() override;
+    bool collide(i16 xi, i16 yi, u8 width) override;
 };
 
 byte *serialise_clear_screen();
+byte *serialise_erase(u16 index);
 
 #endif // CANVASOBJECT_H
