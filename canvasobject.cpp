@@ -57,7 +57,19 @@ byte *Line::serialise() {
 }
 
 bool Line::collide(i16 xi, i16 yi, u8 width) {
-    return false;
+    i32 w32 = static_cast<i32>(width);
+    if(distancesq<i32>(xi,yi,x1,y1) < w32*w32)
+        return true;
+    if(distancesq<i32>(xi,yi,x2,y2) < w32*w32)
+        return true;
+    i32 dx=x2-x1, dy=y2-y1;
+    i32 l_top = (xi-x1)*dx + (yi-y1)*dy;
+    if(l_top < 0) return false;
+    i32 l_bot = dx*dx + dy*dy;
+    if(l_top > l_bot) return false;
+    float lam = l_top/(float)l_bot;
+    float ax=xi-x1-lam*dx, ay=yi-y1-lam*dy;
+    return ax*ax + ay*ay < w32*w32;
 }
 
 // Rect
@@ -171,7 +183,6 @@ Image::Image(byte *packet) {
     //create file
     char namebuf[L_tmpnam];
     tmpnam(namebuf);
-    cout << "Temporary file: '" << namebuf << "'\n";
     //write data to file
     ofstream ofile(namebuf, ios::binary);
     ofile.write((char*)data, file_size);
@@ -191,7 +202,6 @@ byte *Image::serialise() {
     //load file and find size
     ifstream ifile(filename.toStdString(), ios::ate | ios::binary);
     size_t file_size = ifile.tellg();
-    cout << "tellg: " << file_size << " bytes\n";
     //read file
     char *data = (char*)malloc(file_size);
     ifile.seekg(0, ios::beg);

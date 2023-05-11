@@ -32,4 +32,11 @@ T distance(T x1, T y1, T x2, T y2) {
     return (T)sqrt(dx*dx + dy*dy);
 }
 
+template<class T>
+T distancesq(T x1, T y1, T x2, T y2) {
+    T dx = x1-x2;
+    T dy = y1-y2;
+    return (T)(dx*dx + dy*dy);
+}
+
 #endif // UTIL_H

@@ -62,14 +62,15 @@ void gpio_controller[[noreturn]](queue<byte*> *send_queue, queue<byte*> *receive
     for(auto i : PACKET_SIZE_INDEX) cout << i << ", ";
     cout << "}\n";
 
-    //packet buffer
-//    byte *packet_buf = (byte*)malloc(max(PACKET_SIZE_INDEX));
-    //dyn packet size: a pre-dyn packet will be sent before to set (eg image header)
-//    size_t dyn_packet_size = 0;
-
     while(1) {
         //send
-        if(!send_queue->empty()) {
+        if(!send_queue->empty() && !digitalRead(RECV_CONTROL)) {
+            //begin packet
+            //pull SEND_CONTROL high
+            digitalWrite(SEND_CONTROL, HIGH);
+            //wait for RECV_CONTROL high
+            while(!digitalRead(RECV_CONTROL));
+
 //            cout << "[GPIO] Send mode\n";
             //grab first packet
             send_mutex->lock();
@@ -92,12 +93,6 @@ void gpio_controller[[noreturn]](queue<byte*> *send_queue, queue<byte*> *receive
                 delete data;
             }
 //            cout << "[GPIO] Sending packet of type " << (u16)packet[0] << " and size " << packet_size << " bytes\n";
-
-            //begin packet
-            //pull SEND_CONTROL high
-            digitalWrite(SEND_CONTROL, HIGH);
-            //wait for RECV_CONTROL high
-            while(!digitalRead(RECV_CONTROL));
 
             for(int i=0; i<8; i++)
                 pinMode(i, OUTPUT);
@@ -167,12 +162,6 @@ void gpio_controller[[noreturn]](queue<byte*> *send_queue, queue<byte*> *receive
                 data_ok_state = !data_ok_state;
                 digitalWrite(DATA_OK, data_ok_state);
             }
-            //wait for RECV_CONTROL low
-            while(digitalRead(RECV_CONTROL));
-            //pull SEND_CONTROL low
-            digitalWrite(SEND_CONTROL, LOW);
-            //cout  << "[GPIO] Packet received\n";
-
             //if dynamic image packet, reformat to expected format
             if(packet_type == PTImage) {
                 PacketImage *pi = (PacketImage*)packet;
@@ -190,8 +179,19 @@ void gpio_controller[[noreturn]](queue<byte*> *send_queue, queue<byte*> *receive
             receive_mutex->lock();
             receive_queue->push(packet);
             receive_mutex->unlock();
+
+            //wait for RECV_CONTROL low
+            while(digitalRead(RECV_CONTROL));
+            //pull SEND_CONTROL low
+            digitalWrite(SEND_CONTROL, LOW);
+            //cout  << "[GPIO] Packet received\n";
+
+            delayMicroseconds(20);
         }
     }
 }
 
 #endif // GPIO_CONTROLLER_H
+
+
+
