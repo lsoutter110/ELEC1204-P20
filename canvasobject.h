@@ -66,7 +66,7 @@ struct PacketImage {
     byte *data;
 };
 
-const size_t PACKET_SIZE_INDEX[] = {sizeof(PacketClearScreen), sizeof(PacketLine), sizeof(PacketRect), sizeof(PacketCircle), sizeof(PacketErase)};
+const size_t PACKET_SIZE_INDEX[] = {sizeof(PacketClearScreen), sizeof(PacketLine), sizeof(PacketRect), sizeof(PacketCircle), sizeof(PacketImage), sizeof(PacketErase)};
 
 class CanvasObject
 {
