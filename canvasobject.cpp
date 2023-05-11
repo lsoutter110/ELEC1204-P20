@@ -1,6 +1,11 @@
 #include "canvasobject.h"
 
 #include <QDebug>
+#include <fstream>
+#include <iostream>
+#include <filesystem>
+#include <cstdio>
+using namespace std;
 
 // CanvasObject
 
@@ -146,6 +151,67 @@ byte *Circle::serialise() {
 
 bool Circle::collide(i16 xi, i16 yi, u8 width) {
     return abs(distance(xi, yi, x, y)-rad)<width;
+}
+
+// Image
+
+Image::Image(i16 xi1, i16 yi1, i16 xi2, i16 yi2, QString f) : x1(xi1), y1(yi1), x2(xi2), y2(yi2), filename(f) {
+    cache = QImage(filename);
+};
+
+Image::Image(byte *packet) {
+    //deserialise
+    PacketImage *p = (PacketImage*) packet;
+    x1 = p->x1;
+    y1 = p->y1;
+    x2 = p->x2;
+    y2 = p->y2;
+    size_t file_size = ((size_t)p->sizeh)<<16 | (size_t)p->sizel;
+    byte *data = p->data;
+    //create file
+    char namebuf[L_tmpnam];
+    tmpnam(namebuf);
+    cout << "Temporary file: '" << namebuf << "'\n";
+    //write data to file
+    ofstream ofile(namebuf, ios::binary);
+    ofile.write((char*)data, file_size);
+    ofile.close();
+    delete data;
+    //setup cache
+    cache = QImage(QString(namebuf));
+    //destroy temp file
+    remove(namebuf);
+}
+
+void Image::draw(QPainter *painter, QPen *pen) {
+    painter->drawImage(QRect(min(x1,x2), min(y1,y2), abs(x1-x2), abs(y1-y2)), cache);
+}
+
+byte *Image::serialise() {
+    //load file and find size
+    ifstream ifile(filename.toStdString(), ios::ate | ios::binary);
+    size_t file_size = ifile.tellg();
+    cout << "tellg: " << file_size << " bytes\n";
+    //read file
+    char *data = (char*)malloc(file_size);
+    ifile.seekg(0, ios::beg);
+    ifile.read(data, file_size);
+    ifile.close();
+    //serialise packet
+    PacketImage *packet = new (PacketImage){
+        PTImage,
+        x1, y1,
+        x2, y2,
+        (u16)(file_size>>16), (u16)file_size,
+        0,
+        (byte*)data,
+    };
+    return (byte*)packet;
+}
+
+bool Image::collide(i16 xi, i16 yi, u8 width) {
+    return (((y1<yi+width)&&(yi<y2+width)) || ((y2<yi+width)&&(yi<y1+width)))
+        && (((x1<xi+width)&&(xi<x2+width)) || ((x2<xi+width)&&(xi<x1+width)));
 }
 
 // Commands

@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <QStyle>
 #include <QProxyStyle>
+#include <QFileDialog>
 
 SendWindow::SendWindow(QWidget *parent, queue<byte*> *data_queue, mutex *data_mutex)
     : MainWindow(parent), send_queue(data_queue), send_mutex(data_mutex) {
@@ -35,11 +36,42 @@ SendWindow::SendWindow(QWidget *parent, queue<byte*> *data_queue, mutex *data_mu
     connect(action_set_tool_line, &QAction::triggered, this, &SendWindow::set_tool_line);
     connect(action_set_tool_rect, &QAction::triggered, this, &SendWindow::set_tool_rect);
     connect(action_set_tool_circle, &QAction::triggered, this, &SendWindow::set_tool_circle);
+
+    connect(action_set_tool_image, &QAction::triggered, this, &SendWindow::set_tool_image);
 }
 
 SendWindow::~SendWindow() {
 //    delete receive_window;
 }
+
+//void SendWindow::paintEvent(QPaintEvent *event) {
+//    MainWindow::paintEvent(event);
+
+//    QPainter painter(this);
+//    QPoint mousepos;
+//    mapFromGlobal(mousepos);
+//    int mouse_x = mousepos.x();
+//    int mouse_y = mousepos.y();
+
+//    //paint tool icons
+//    switch(drawing_mode) {
+//    case DMNone:
+//    case DMLine:
+//    case DMRect:
+//    case DMCircle:
+//        break;
+
+//    case DMEraser:
+//        painter.setPen(QPen(Qt::gray, 1, Qt::SolidLine, Qt::RoundCap));
+//        painter.drawEllipse(mouse_x, mouse_y, eraser_rad, eraser_rad);
+//        break;
+
+//    case DMStroke:
+//        painter.setPen(QPen(drawing_pen.color(), 1, Qt::SolidLine, Qt::RoundCap));
+//        painter.drawEllipse(mouse_x, mouse_y, drawing_pen.width()/2, drawing_pen.width()/2);
+//        break;
+//    }
+//}
 
 void SendWindow::mousePressEvent(QMouseEvent *event) {
     QPoint pos = event->pos();
@@ -78,7 +110,7 @@ void SendWindow::on_mouse_down(int16_t mouse_x, int16_t mouse_y) {
     case DMEraser:
         for(auto c=canvas_objects.begin(); c<canvas_objects.end(); ++c) {
             //check for collision
-            if(!(*c)->collide(mouse_x, mouse_y, eraser_width))
+            if(!(*c)->collide(mouse_x, mouse_y, eraser_rad))
                 continue;
             //delete object
             delete (*c);
@@ -120,6 +152,14 @@ void SendWindow::on_mouse_down(int16_t mouse_x, int16_t mouse_y) {
 
         canvas_objects.push_back(new Circle(last_mouse_x, last_mouse_y, 0, drawing_pen));
         break;
+
+    case DMImage:
+        drawing = true;
+
+        last_mouse_x = mouse_x;
+        last_mouse_y = mouse_y;
+
+        canvas_objects.push_back(new Image(last_mouse_x, last_mouse_y, mouse_x, mouse_y, selected_image));
     }
 }
 
@@ -139,6 +179,7 @@ void SendWindow::on_mouse_up(int16_t mouse_x, int16_t mouse_y) {
     case DMLine:
     case DMRect:
     case DMCircle:
+    case DMImage:
         send_mutex->lock();
         send_queue->push(canvas_objects.back()->serialise());
         send_mutex->unlock();
@@ -169,7 +210,7 @@ void SendWindow::on_mouse_move(int16_t mouse_x, int16_t mouse_y) {
     case DMEraser:
         for(auto c=canvas_objects.begin(); c<canvas_objects.end(); ++c) {
             //check for collision
-            if(!(*c)->collide(mouse_x, mouse_y, eraser_width))
+            if(!(*c)->collide(mouse_x, mouse_y, eraser_rad))
                 continue;
             //delete object
             delete (*c);
@@ -210,6 +251,16 @@ void SendWindow::on_mouse_move(int16_t mouse_x, int16_t mouse_y) {
 
         update();
         break;
+
+    case DMImage:
+        if(!drawing) break;
+
+        ((Image*)canvas_objects.back())->x2 = mouse_x;
+        ((Image*)canvas_objects.back())->y2 = mouse_y;
+
+        update();
+        break;
+
     }
 }
 
@@ -256,4 +307,10 @@ void SendWindow::set_tool_rect() {
 
 void SendWindow::set_tool_circle() {
     drawing_mode = DMCircle;
+}
+
+void SendWindow::set_tool_image() {
+    drawing_mode = DMImage;
+    //select image
+    selected_image = QFileDialog::getOpenFileName(this, tr("Open Image"));
 }

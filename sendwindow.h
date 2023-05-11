@@ -18,6 +18,7 @@ enum DrawingMode {
     DMLine,
     DMRect,
     DMCircle,
+    DMImage,
 };
 
 class SendWindow : public MainWindow
@@ -30,6 +31,7 @@ public:
                mutex *data_mutex = nullptr);
     ~SendWindow();
 
+//    void paintEvent(QPaintEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
@@ -42,7 +44,8 @@ private:
     i16 last_mouse_x, last_mouse_y;
     DrawingMode drawing_mode = DMNone;
     QPen drawing_pen = QPen(Qt::black, 4, Qt::SolidLine, Qt::RoundCap);
-    u8 eraser_width = 10;
+    u8 eraser_rad = 10;
+    QString selected_image;
 
     QToolBar *toolbar;
     QColorDialog *col_dialog;
@@ -60,6 +63,7 @@ private slots:
     void set_tool_line();
     void set_tool_rect();
     void set_tool_circle();
+    void set_tool_image();
 };
 
 #endif // SENDWINDOW_H

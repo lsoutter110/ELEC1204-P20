@@ -58,6 +58,14 @@ struct PacketErase {
     u16 checksum;
 };
 
+struct PacketImage {
+    PacketType type;
+    i16 x1, y1, x2, y2;
+    u16 sizeh, sizel;
+    u16 checksum;
+    byte *data;
+};
+
 const size_t PACKET_SIZE_INDEX[] = {sizeof(PacketClearScreen), sizeof(PacketLine), sizeof(PacketRect), sizeof(PacketCircle), sizeof(PacketErase)};
 
 class CanvasObject
@@ -111,6 +119,21 @@ public:
 
     Circle(i16 xi, i16 yi, i16 radi, QPen pen);
     Circle(byte *packet);
+
+    void draw(QPainter *painter, QPen *pen) override;
+    byte *serialise() override;
+    bool collide(i16 xi, i16 yi, u8 width) override;
+};
+
+class Image : public CanvasObject {
+public:
+    i16 x1, y1;
+    i16 x2, y2;
+    QString filename;
+    QImage cache;
+
+    Image(i16 xi1, i16 yi1, i16 xi2, i16 yi2, QString f);
+    Image(byte *packet);
 
     void draw(QPainter *painter, QPen *pen) override;
     byte *serialise() override;
